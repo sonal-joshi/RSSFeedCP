@@ -1,18 +1,25 @@
 package hello;
 
+import java.util.ArrayList;
+
 public class Greeting {
 
-    private String content;
+    private ArrayList<Channel> channel;
+
+    public Greeting(ArrayList<Channel> channel) {
+        this.channel = channel;
+    }
 
     public Greeting() {
+        channel = new ArrayList<Channel>();
     }
 
-    public Greeting(String content) {
-        this.content = content;
+    public void addChannel(Channel channel) {
+        this.channel.add(channel);
     }
 
-    public String getContent() {
-        return content;
+    public ArrayList<Channel> getChannel() {
+        return channel;
     }
 
 }

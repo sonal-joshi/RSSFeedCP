@@ -1,21 +1,23 @@
 package hello;
 
+import java.util.ArrayList;
+
 public class HelloMessage {
 
-    private String name;
+    private ArrayList<String> url;
 
     public HelloMessage() {
     }
 
-    public HelloMessage(String name) {
-        this.name = name;
+    public HelloMessage(ArrayList<String> url) {
+        this.url = url;
     }
 
-    public String getName() {
-        return name;
+    public ArrayList<String> getUrL() {
+        return url;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setUrl(ArrayList<String> url) {
+        this.url = url;
     }
 }
