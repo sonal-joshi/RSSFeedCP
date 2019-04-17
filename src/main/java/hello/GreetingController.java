@@ -38,10 +38,10 @@ public class GreetingController {
         return new Greeting(out);
     }
 
-    public Greeting parallelFeedReaderwithThreads(HelloMessage message) {
+    public Greeting parallelFeedReaderwithThreads(HelloMessage message) throws Exception {
         FeedReader parser = new FeedReader();
         ArrayList<Channel> output = new ArrayList<Channel>();
-              
+
         FeedUpdateTask feedupdatetask[] = new FeedUpdateTask[message.getUrL().size()];
         Thread task[] = new Thread[message.getUrL().size()];
         for (int i = 0; i < message.getUrL().size(); i++) {
@@ -50,6 +50,9 @@ public class GreetingController {
             task[i].start();
             //call feed update after certain time interval
         }
+        Thread.sleep(1000);
+        FireGreeting r = new FireGreeting(this);
+        new Thread(r).start();
         for (int i = 0; i < message.getUrL().size(); i++) {
             try {
                 task[i].join();
@@ -59,35 +62,34 @@ public class GreetingController {
             }
         }
         output = parser.getlist();
-        
- 
         return new Greeting(output);
     }
-    
     public Greeting parallelFeedReaderwithThreadPool(HelloMessage message) {
-    	FeedReader parser = new FeedReader();
+        FeedReader parser = new FeedReader();
         ArrayList<Channel> output = new ArrayList<Channel>();
         ExecutorService exec=Executors.newFixedThreadPool(3);
         for(int i=0;i<message.getUrL().size();i++) {
-        	Runnable thread=new FeedReader(message.getUrL().get(i));
-        	exec.execute(thread);
-        	
+            Runnable thread=new FeedReader(message.getUrL().get(i));
+            exec.execute(thread);
+
         }
         exec.shutdown();
         while(!exec.isTerminated()) {
 
-		}
+        }
         output=parser.getlist();
         return new Greeting(output);
-        
+
     }
 
     public void fireGreeting() {
         System.out.println("Fire");
         ArrayList<Channel> result = new ArrayList<Channel>();
-        Channel channel = new Channel("Test", "This is new channel", "en-US", "Tester", "Sat, 14 April 2019", "Sat, 14 April 2019", null);
+        ArrayList<Feed> resultFeeds = new ArrayList<Feed>();
+        resultFeeds.add(new Feed("title", "description", "pubDate", "link", new Guid("true", "guid")));
+        Channel channel = new Channel("Test", "This is new channel", "en-US", "Tester", "Sat, 14 April 2019", "Sat, 14 April 2019", null, resultFeeds);
         result.add(channel);
-        this.template.convertAndSend("/topic/greetings", new Greeting(result));
+        //   this.template.convertAndSend("/topic/greetings", new Greeting(result));
     }
 }
 

@@ -27,6 +27,19 @@ public class Channel {
         this.entries = new ArrayList<Feed>();
     }
 
+    public Channel(String title, String description, String language,
+                   String copyright, String lastBuildDate, String pubDate, Image image, ArrayList<Feed> entries) {
+        this.title = title;
+        this.description = description;
+        this.language = language;
+        this.copyright = copyright;
+        this.lastBuildDate = lastBuildDate;
+        this.image = image;
+        this.pubDate = pubDate;
+        this.entries = entries;
+    }
+
+
     public List<Feed> getEntries() {
         return entries;
     }

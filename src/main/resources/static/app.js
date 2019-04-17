@@ -1,4 +1,5 @@
 var stompClient = null;
+var channelMap = new Map();
 
 function setConnected(connected) {
     $("#connect").prop("disabled", connected);
@@ -42,49 +43,71 @@ function sendName() {
 
 function showGreeting(channelList) {
     channelList.forEach(function (channel, index) {
-        var channelIdentifier = channel.title;
-        channelIdentifier = channelIdentifier.replace(/[^0-9A-Za-z]/gi, '');
-        if ($("#cardView" + channelIdentifier).length <= 0) {
-            $("#conversation").append(createChannelCard(channel, channelIdentifier));
-        }
-        if ($("#listDiv" + channelIdentifier).length <= 0) {
-            var Listdiv = document.createElement('div');
-            Listdiv.id = "listDiv" + channelIdentifier;
-            var identifier = "#cardView" + channelIdentifier;
-            $(identifier).append(Listdiv);
-        }
-        var length = channel.entries ? channel.entries.length : 0;
-        for (var i = 0; i < length; i++) {
-            var feed = channel.entries[i];
-            if ($("#listDiv" + channelIdentifier + " > " + "#item" + i).length <= 0) {
-                var div = document.createElement('div');
-                div.className = 'card';
-                div.id = "item" + i;
-                var innderdiv = document.createElement('div');
-                innderdiv.className = 'card-container';
-                innderdiv.innerHTML = "<h4><b>" + feed.title + "</b></h4>";
-                var e = document.createElement('div');
-                e.className = 'card-description'
-                e.innerHTML = feed.description;
-                for (var j = 0; j < e.childNodes.length; j++) {
-                    innderdiv.appendChild(e.childNodes[0]);
-                }
-                if (feed.guid) {
-                    if ("true" == feed.guid.isPermLink) {
-                        var anchorElement = document.createElement('a');
-                        anchorElement.className = 'link';
-                        anchorElement.href = feed.guid.value;
-                        anchorElement.innerHTML = "<u>Read Full Article</u>";
-                        innderdiv.appendChild(anchorElement);
-                    }
-                }
-                div.appendChild(innderdiv);
-                $("#listDiv" + channel.title).prepend(div);
-            }
-        }
+        channelMap.set(index, channel);
+        var testdiv = document.createElement("div");
+        testdiv.className = 'card';
+        testdiv.setAttribute("index", index);
+        testdiv.onclick = function () {
+            $("#conversation").html("");
+            var index = parseInt(this.getAttribute("index"));
+            var channel = channelMap.get(index);
+            showRSSFeeds(channel);
+        };
+        testdiv.innerHTML = channel.title;
+        $("#RssIndex").append(testdiv);
     });
 }
 
+function showRSSFeeds(channel) {
+    var channelIdentifier = channel.title;
+    channelIdentifier = channelIdentifier.replace(/[^0-9A-Za-z]/gi, '');
+    if ($("#cardView" + channelIdentifier).length <= 0) {
+        createChannelCard(channel, channelIdentifier);
+    }
+
+    if ($("#listDiv" + channelIdentifier).length <= 0) {
+        createItemListElement(channelIdentifier);
+    }
+    var length = channel.entries ? channel.entries.length : 0;
+    for (var i = 0; i < length; i++) {
+        var feed = channel.entries[i];
+        if (true) {
+            createItemCard(feed, channelIdentifier);
+        }
+    }
+}
+
+function createItemListElement(channelIdentifier) {
+    var Listdiv = document.createElement('div');
+    Listdiv.id = "listDiv" + channelIdentifier;
+    $("#cardView" + channelIdentifier).append(Listdiv);
+}
+
+function createItemCard(feed, channelIdentifier) {
+    var div = document.createElement('div');
+    div.className = 'card';
+    div.id = "item";
+    var innderdiv = document.createElement('div');
+    innderdiv.className = 'card-container';
+    innderdiv.innerHTML = "<h4><b>" + feed.title + "</b></h4>";
+    var e = document.createElement('div');
+    e.className = 'card-description'
+    e.innerHTML = feed.description;
+    for (var j = 0; j < e.childNodes.length; j++) {
+        innderdiv.appendChild(e.childNodes[0]);
+    }
+    if (feed.guid) {
+        if ("true" == feed.guid.isPermLink) {
+            var anchorElement = document.createElement('a');
+            anchorElement.className = 'link';
+            anchorElement.href = feed.guid.value;
+            anchorElement.innerHTML = "<u>Read Full Article</u>";
+            innderdiv.appendChild(anchorElement);
+        }
+    }
+    div.appendChild(innderdiv);
+    $("#listDiv" + channelIdentifier).prepend(div);
+}
 function createChannelCard(channel, channelIdentifier) {
     var carddiv = document.createElement('div');
     carddiv.className = 'card';
@@ -101,7 +124,7 @@ function createChannelCard(channel, channelIdentifier) {
             }
         carddiv.appendChild(image);
     }
-    return carddiv;
+    $("#conversation").append(carddiv);
 }
 
 
