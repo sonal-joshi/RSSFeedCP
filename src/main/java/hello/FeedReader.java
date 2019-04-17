@@ -14,7 +14,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Iterator;
 
-public class FeedReader {
+public class FeedReader implements Runnable {
 
     static final String TITLE = "title";
     static final String IS_PERM_LINK = "isPermaLink";
@@ -142,7 +142,7 @@ public class FeedReader {
         }
     }
 
-    private String getCharacterData(XMLEvent event, XMLEventReader eventReader)
+    private synchronized String getCharacterData(XMLEvent event, XMLEventReader eventReader)
             throws XMLStreamException {
         StringBuilder sw = null;
         XMLOutputFactory of = XMLOutputFactory.newInstance();
@@ -173,7 +173,7 @@ public class FeedReader {
         return result;
     }
 
-    public Guid getGuid(XMLEvent event, XMLEventReader eventReader) throws XMLStreamException {
+    public synchronized Guid getGuid(XMLEvent event, XMLEventReader eventReader) throws XMLStreamException {
         Guid guid = null;
         while (eventReader.hasNext()) {
             if (event.isStartElement() && event.asStartElement().getName().getLocalPart().equals(GUID)) {
@@ -200,12 +200,26 @@ public class FeedReader {
     public synchronized void setlist(Channel channel) {
 
         output.add(channel);
+        System.out.println("channel adding to main list "+channel.getTitle());
         System.out.println("setting in list finished");
     }
 
     public synchronized ArrayList<Channel> getlist() {
+    	System.out.println("output size now is "+output.size());
+    	for(Channel channel: output) {
+    		System.out.println(channel.getTitle());
+    	}
         return output;
     }
+
+	@Override
+	public void run() {
+		// TODO Auto-generated method stub
+		Thread t=Thread.currentThread();
+		System.out.println("in run method"+ t.getName());
+		Channel channel=fetchFeed();
+		System.out.println("channel title"+channel.getTitle());
+	}
 
 
 }

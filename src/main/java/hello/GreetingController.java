@@ -9,6 +9,9 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.util.HtmlUtils;
 
 import java.util.ArrayList;
+import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 @Controller
 public class GreetingController {
@@ -20,7 +23,8 @@ public class GreetingController {
     @SendTo("/topic/greetings")
     public Greeting greeting(HelloMessage message) throws Exception {
         //return sequentialFeedReader(message);
-        return parallelFeedReader(message);
+    	//return parallelFeedReaderwithThreadPool(message);
+        return parallelFeedReaderwithThreads(message);
     }
 
     public Greeting sequentialFeedReader(HelloMessage message) throws Exception {
@@ -34,9 +38,10 @@ public class GreetingController {
         return new Greeting(out);
     }
 
-    public Greeting parallelFeedReader(HelloMessage message) {
+    public Greeting parallelFeedReaderwithThreads(HelloMessage message) {
         FeedReader parser = new FeedReader();
         ArrayList<Channel> output = new ArrayList<Channel>();
+              
         FeedUpdateTask feedupdatetask[] = new FeedUpdateTask[message.getUrL().size()];
         Thread task[] = new Thread[message.getUrL().size()];
         for (int i = 0; i < message.getUrL().size(); i++) {
@@ -54,7 +59,27 @@ public class GreetingController {
             }
         }
         output = parser.getlist();
+        
+ 
         return new Greeting(output);
+    }
+    
+    public Greeting parallelFeedReaderwithThreadPool(HelloMessage message) {
+    	FeedReader parser = new FeedReader();
+        ArrayList<Channel> output = new ArrayList<Channel>();
+        ExecutorService exec=Executors.newFixedThreadPool(3);
+        for(int i=0;i<message.getUrL().size();i++) {
+        	Runnable thread=new FeedReader(message.getUrL().get(i));
+        	exec.execute(thread);
+        	
+        }
+        exec.shutdown();
+        while(!exec.isTerminated()) {
+
+		}
+        output=parser.getlist();
+        return new Greeting(output);
+        
     }
 
     public void fireGreeting() {

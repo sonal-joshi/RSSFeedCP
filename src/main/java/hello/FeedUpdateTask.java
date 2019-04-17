@@ -14,5 +14,6 @@ public class FeedUpdateTask implements Runnable {
         // get urls and get feeds using multiple threads and display
         parser = new FeedReader(url);
         Channel channel = parser.fetchFeed();
+        System.out.println(" thread reading from feed update task");
     }
 }
