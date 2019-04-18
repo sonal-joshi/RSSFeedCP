@@ -22,13 +22,14 @@ public class GreetingController {
     @SendTo("/topic/greetings")
     public Greeting greeting(HelloMessage message) throws Exception {
         //return sequentialFeedReader(message);
-        return parallelFeedReaderwithThreadPool(message);
+        //return parallelFeedReaderwithThreadPool(message);
         //return parallelFeedReaderwithThreads(message);
-        //	return forkjoinprinciple(message);
+        	return forkjoinprinciple(message);
         //return divideWorkAmongThreads(message);
     }
 
     public Greeting sequentialFeedReader(HelloMessage message) throws Exception {
+    	 System.out.println("timer start "+ System.currentTimeMillis());
         FeedReader parser = new FeedReader();
         Runnable thread = new FeedReader(new ArrayList<>(Arrays.asList(message.getUrL().get(0))));
         thread.run();
@@ -36,6 +37,7 @@ public class GreetingController {
         FireGreeting r = new FireGreeting(this);
         new Thread(r).start();
         ArrayList<Channel> out = new ArrayList<Channel>(parser.getlist());
+        System.out.println("timer end "+ System.currentTimeMillis());
         return new Greeting(out);
     }
 
@@ -43,6 +45,9 @@ public class GreetingController {
         FeedReader parser = new FeedReader();
         ArrayList<Channel> output = new ArrayList<Channel>();
 
+        
+
+        System.out.println("timer start "+ System.currentTimeMillis());
         FeedUpdateTask feedupdatetask[] = new FeedUpdateTask[message.getUrL().size()];
         Thread task[] = new Thread[message.getUrL().size()];
         for (int i = 0; i < message.getUrL().size(); i++) {
@@ -63,11 +68,13 @@ public class GreetingController {
             }
         }
         output = parser.getlist();
+        System.out.println("timer end "+ System.currentTimeMillis());
         return new Greeting(output);
     }
     public Greeting parallelFeedReaderwithThreadPool(HelloMessage message) {
         FeedReader parser = new FeedReader();
         ArrayList<Channel> output = new ArrayList<Channel>();
+        System.out.println("timer start "+ System.currentTimeMillis());
         ExecutorService exec=Executors.newFixedThreadPool(3);
         for(int i=0;i<message.getUrL().size();i++) {
             Runnable thread = new FeedReader(new ArrayList<>(Arrays.asList(message.getUrL().get(i))));
@@ -79,6 +86,7 @@ public class GreetingController {
 
         }
         output=parser.getlist();
+        System.out.println("timer end "+ System.currentTimeMillis());
         return new Greeting(output);
 
     }
@@ -86,10 +94,12 @@ public class GreetingController {
     public Greeting forkjoinprinciple(HelloMessage message) {
     	ArrayList<Channel> output = new ArrayList<Channel>();
     	int nThreads=Runtime.getRuntime().availableProcessors();
+    	 System.out.println("timer start "+ System.currentTimeMillis());
     	 ForkJoinPool forkJoinPool = new ForkJoinPool(nThreads);
     	 System.out.println("number of threads"+nThreads);
     	 forkJoinPool.invoke(new ForkJoinReader(message.getUrL(),0,message.getUrL().size()));
     	 ForkJoinReader forkjoinreader=new ForkJoinReader();
+    	 System.out.println("timer end "+ System.currentTimeMillis());
     	 output=forkjoinreader.getList();
     	return new Greeting(output);
     }
@@ -107,7 +117,7 @@ public class GreetingController {
     public Greeting divideWorkAmongThreads(HelloMessage message) {
         int procs = Runtime.getRuntime().availableProcessors();
         ExecutorService es = Executors.newFixedThreadPool(procs);
-
+        System.out.println("timer start "+ System.currentTimeMillis());
         int tasks = message.getUrL().size();
         int overflow = tasks % procs;
         List<Future<?>> futures = new ArrayList<>();
@@ -140,6 +150,7 @@ public class GreetingController {
             }
         }
         ArrayList<Channel> output = new ArrayList<Channel>(parser.getlist());
+        System.out.println("timer end "+ System.currentTimeMillis());
         return new Greeting(output);
     }
 }
