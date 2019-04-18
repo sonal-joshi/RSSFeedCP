@@ -2,15 +2,15 @@ package hello;
 
 import java.util.ArrayList;
 
-public class HelloMessage {
+public class FeedRequest {
 
     private ArrayList<String> url;
     private String mode;
 
-    public HelloMessage() {
+    public FeedRequest() {
     }
 
-    public HelloMessage(ArrayList<String> url, String mode) {
+    public FeedRequest(ArrayList<String> url, String mode) {
         this.url = url;
         this.mode = mode;
     }

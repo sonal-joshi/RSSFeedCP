@@ -140,7 +140,7 @@ function connect() {
     stompClient = Stomp.over(socket);
     stompClient.connect({}, function (frame) {
         console.log('Connected: ' + frame);
-        stompClient.subscribe('/topic/greetings', function (greeting) {
+        stompClient.subscribe('/rss/feeds', function (greeting) {
             setTimer(false);
             showGreeting(JSON.parse(greeting.body).channel);
         });
@@ -161,7 +161,7 @@ function sendName() {
     });
     var runType = $("#runType").val();
     setTimer(true);
-    stompClient.send("/app/hello", {}, JSON.stringify({'url': uniqueUrls, 'mode': runType}));
+    stompClient.send("/app/fetchFeed", {}, JSON.stringify({'url': uniqueUrls, 'mode': runType}));
 }
 
 function addUrl() {
@@ -177,7 +177,7 @@ function showGreeting(channelList) {
         testdiv.className = 'card';
         testdiv.setAttribute("index", index);
         testdiv.onclick = function () {
-            $("#conversation").html("");
+            $("#RssFeed").html("");
             var index = parseInt(this.getAttribute("index"));
             var channel = channelMap.get(index);
             if (channel != null)
@@ -254,7 +254,7 @@ function createChannelCard(channel, channelIdentifier) {
             }
         carddiv.appendChild(image);
     }
-    $("#conversation").append(carddiv);
+    $("#RssFeed").prepend(carddiv);
 }
 
 

@@ -13,57 +13,57 @@ import java.util.List;
 import java.util.concurrent.*;
 
 @Controller
-public class GreetingController {
+public class RssFeedServiceController {
 
     @Autowired
     private SimpMessagingTemplate template;
 
-    @MessageMapping("/hello")
-    @SendTo("/topic/greetings")
-    public Greeting greeting(HelloMessage message) throws Exception {
-        switch (message.getMode()) {
+    @MessageMapping("/fetchFeed")
+    @SendTo("/rss/feeds")
+    public RssFeedReaderService greeting(FeedRequest feedRequest) throws Exception {
+        switch (feedRequest.getMode()) {
             case "0":
-                return sequentialFeedReader(message);
+                return sequentialFeedReader(feedRequest);
             case "1":
-                return parallelFeedReaderwithThreads(message);
+                return parallelFeedReaderwithThreads(feedRequest);
             case "2":
-                return parallelFeedReaderwithThreadPool(message);
+                return parallelFeedReaderwithThreadPool(feedRequest);
             case "3":
-                return forkjoinprinciple(message);
+                return forkjoinprinciple(feedRequest);
             case "4":
-                return divideWorkAmongThreads(message);
+                return divideWorkAmongThreads(feedRequest);
             default:
                 return null;
         }
     }
 
-    public Greeting sequentialFeedReader(HelloMessage message) throws Exception {
+    public RssFeedReaderService sequentialFeedReader(FeedRequest feedRequest) throws Exception {
         long start = System.currentTimeMillis();
         System.out.println("timer start " + start);
-        FeedReader feedReader = new FeedReader(message.getUrL());
+        FeedReader feedReader = new FeedReader(feedRequest.getUrL());
         feedReader.run();
         ArrayList<Channel> out = feedReader.getlist();
         long end = System.currentTimeMillis();
         System.out.println("timer end " + end);
         long diff = end - start;
         System.out.println("total time " + diff);
-        return new Greeting(out);
+        return new RssFeedReaderService(out);
     }
 
-    public Greeting parallelFeedReaderwithThreads(HelloMessage message) throws Exception {
+    public RssFeedReaderService parallelFeedReaderwithThreads(FeedRequest feedRequest) throws Exception {
         FeedReader parser = new FeedReader();
         ArrayList<Channel> output = new ArrayList<Channel>();
         long start = System.currentTimeMillis();
         System.out.println("timer start " + start);
-        FeedUpdateTask feedupdatetask[] = new FeedUpdateTask[message.getUrL().size()];
-        Thread task[] = new Thread[message.getUrL().size()];
-        for (int i = 0; i < message.getUrL().size(); i++) {
-            feedupdatetask[i] = new FeedUpdateTask(message.getUrL().get(i));
+        FeedUpdateTask feedupdatetask[] = new FeedUpdateTask[feedRequest.getUrL().size()];
+        Thread task[] = new Thread[feedRequest.getUrL().size()];
+        for (int i = 0; i < feedRequest.getUrL().size(); i++) {
+            feedupdatetask[i] = new FeedUpdateTask(feedRequest.getUrL().get(i));
             task[i] = new Thread(feedupdatetask[i]);
             task[i].start();
             //call feed update after certain time interval
         }
-        for (int i = 0; i < message.getUrL().size(); i++) {
+        for (int i = 0; i < feedRequest.getUrL().size(); i++) {
             try {
                 task[i].join();
             } catch (InterruptedException e) {
@@ -76,17 +76,18 @@ public class GreetingController {
         System.out.println("timer end " + end);
         long diff = end - start;
         System.out.println("total time " + diff);
-        return new Greeting(output);
+        return new RssFeedReaderService(output);
     }
-    public Greeting parallelFeedReaderwithThreadPool(HelloMessage message) {
+
+    public RssFeedReaderService parallelFeedReaderwithThreadPool(FeedRequest feedRequest) {
         FeedReader parser = new FeedReader();
         long start = System.currentTimeMillis();
         System.out.println("timer start " + start);
         ArrayList<Channel> output = new ArrayList<Channel>();
         System.out.println("timer start "+ System.currentTimeMillis());
         ExecutorService exec=Executors.newFixedThreadPool(3);
-        for(int i=0;i<message.getUrL().size();i++) {
-            Runnable thread = new FeedReader(new ArrayList<>(Arrays.asList(message.getUrL().get(i))));
+        for (int i = 0; i < feedRequest.getUrL().size(); i++) {
+            Runnable thread = new FeedReader(new ArrayList<>(Arrays.asList(feedRequest.getUrL().get(i))));
             exec.execute(thread);
 
         }
@@ -99,11 +100,11 @@ public class GreetingController {
         System.out.println("timer end " + end);
         long diff = end - start;
         System.out.println("total time " + diff);
-        return new Greeting(output);
+        return new RssFeedReaderService(output);
 
     }
 
-    public Greeting forkjoinprinciple(HelloMessage message) {
+    public RssFeedReaderService forkjoinprinciple(FeedRequest feedRequest) {
     	ArrayList<Channel> output = new ArrayList<Channel>();
         long start = System.currentTimeMillis();
         System.out.println("timer start " + start);
@@ -111,24 +112,24 @@ public class GreetingController {
     	 System.out.println("timer start "+ System.currentTimeMillis());
     	 ForkJoinPool forkJoinPool = new ForkJoinPool(nThreads);
     	 System.out.println("number of threads"+nThreads);
-    	 forkJoinPool.invoke(new ForkJoinReader(message.getUrL(),0,message.getUrL().size()));
+        forkJoinPool.invoke(new ForkJoinReader(feedRequest.getUrL(), 0, feedRequest.getUrL().size()));
     	 ForkJoinReader forkjoinreader=new ForkJoinReader();
     	 output=forkjoinreader.getList();
         long end = System.currentTimeMillis();
         System.out.println("timer end " + end);
         long diff = end - start;
         System.out.println("total time " + diff);
-    	return new Greeting(output);
+        return new RssFeedReaderService(output);
     }
 
 
-    public Greeting divideWorkAmongThreads(HelloMessage message) {
+    public RssFeedReaderService divideWorkAmongThreads(FeedRequest feedRequest) {
         int procs = Runtime.getRuntime().availableProcessors();
         long startTime = System.currentTimeMillis();
         System.out.println("timer start " + startTime);
         ExecutorService es = Executors.newFixedThreadPool(procs);
         System.out.println("timer start "+ System.currentTimeMillis());
-        int tasks = message.getUrL().size();
+        int tasks = feedRequest.getUrL().size();
         int overflow = tasks % procs;
         List<Future<?>> futures = new ArrayList<>();
 
@@ -146,7 +147,7 @@ public class GreetingController {
             start = end > 0 ? end + 1 : 0;
             end = end + numberofTasks - 1;
             System.out.println("New thread Range:" + start + " end : " + end);
-            ArrayList<String> urls = new ArrayList<>(message.getUrL().subList(start, end));
+            ArrayList<String> urls = new ArrayList<>(feedRequest.getUrL().subList(start, end));
             parser = new FeedReader(urls);
             futures.add(es.submit(parser));
         }
@@ -164,7 +165,7 @@ public class GreetingController {
         System.out.println("timer end " + endtime);
         long diff = endtime - startTime;
         System.out.println("total time " + diff);
-        return new Greeting(output);
+        return new RssFeedReaderService(output);
     }
 }
 

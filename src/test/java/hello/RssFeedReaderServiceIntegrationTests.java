@@ -26,7 +26,7 @@ import static org.junit.Assert.fail;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-public class GreetingIntegrationTests {
+public class RssFeedReaderServiceIntegrationTests {
 
     @LocalServerPort
     private int port;
@@ -60,14 +60,14 @@ public class GreetingIntegrationTests {
                 session.subscribe("/topic/greetings", new StompFrameHandler() {
                     @Override
                     public Type getPayloadType(StompHeaders headers) {
-                        return Greeting.class;
+                        return RssFeedReaderService.class;
                     }
 
                     @Override
                     public void handleFrame(StompHeaders headers, Object payload) {
-                        Greeting greeting = (Greeting) payload;
+                        RssFeedReaderService rssFeedReaderService = (RssFeedReaderService) payload;
                         try {
-                            //assertEquals("Hello, Spring!", greeting.getContent());
+                            //assertEquals("Hello, Spring!", rssFeedReaderService.getContent());
                         } catch (Throwable t) {
                             failure.set(t);
                         } finally {
@@ -77,7 +77,7 @@ public class GreetingIntegrationTests {
                     }
                 });
                 try {
-                    session.send("/app/hello", new HelloMessage(new ArrayList<String>(), "0"));
+                    session.send("/app/hello", new FeedRequest(new ArrayList<String>(), "0"));
                 } catch (Throwable t) {
                     failure.set(t);
                     latch.countDown();
@@ -93,7 +93,7 @@ public class GreetingIntegrationTests {
             }
         }
         else {
-            fail("Greeting not received");
+            fail("RssFeedReaderService not received");
         }
 
     }

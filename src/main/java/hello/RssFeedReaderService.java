@@ -2,15 +2,15 @@ package hello;
 
 import java.util.ArrayList;
 
-public class Greeting {
+public class RssFeedReaderService {
 
     private ArrayList<Channel> channel;
 
-    public Greeting(ArrayList<Channel> channel) {
+    public RssFeedReaderService(ArrayList<Channel> channel) {
         this.channel = channel;
     }
 
-    public Greeting() {
+    public RssFeedReaderService() {
         channel = new ArrayList<Channel>();
     }
 
