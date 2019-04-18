@@ -13,7 +13,7 @@ public class FireGreeting implements Runnable {
         while (true) {
             try {
                 Thread.sleep(5000);
-                listener.fireGreeting();
+                // listener.fireGreeting();
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }

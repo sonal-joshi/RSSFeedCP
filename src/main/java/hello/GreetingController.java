@@ -10,11 +10,7 @@ import org.springframework.stereotype.Controller;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.ForkJoinPool;
+import java.util.concurrent.*;
 
 @Controller
 public class GreetingController {
@@ -26,10 +22,10 @@ public class GreetingController {
     @SendTo("/topic/greetings")
     public Greeting greeting(HelloMessage message) throws Exception {
         //return sequentialFeedReader(message);
-    	//return parallelFeedReaderwithThreadPool(message);
+        return parallelFeedReaderwithThreadPool(message);
         //return parallelFeedReaderwithThreads(message);
         //	return forkjoinprinciple(message);
-        return divideWorkAmongThreads(message);
+        //return divideWorkAmongThreads(message);
     }
 
     public Greeting sequentialFeedReader(HelloMessage message) throws Exception {
@@ -109,7 +105,6 @@ public class GreetingController {
     }
 
     public Greeting divideWorkAmongThreads(HelloMessage message) {
-
         int procs = Runtime.getRuntime().availableProcessors();
         ExecutorService es = Executors.newFixedThreadPool(procs);
 
@@ -128,9 +123,10 @@ public class GreetingController {
                 numberofTasks = defaultBlockSize + 1;
             else
                 numberofTasks = defaultBlockSize;
-            start = end + 1;
-            end = end + numberofTasks;
-            ArrayList<String> urls = new ArrayList<>(message.getUrL().subList(start, end));
+            start = end > 0 ? end + 1 : 0;
+            end = end + numberofTasks - 1;
+            System.out.println("New thread Range:" + start + " end : " + end);
+            ArrayList<String> urls = new ArrayList<>(message.getUrL().subList(start - 1, end - 1));
             parser = new FeedReader(urls);
             futures.add(es.submit(parser));
         }

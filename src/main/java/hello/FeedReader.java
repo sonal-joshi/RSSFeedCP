@@ -48,7 +48,7 @@ public class FeedReader implements Runnable {
 
     }
 
-    public void fetchFeed(URL url) {
+    public Channel fetchFeed(URL url) {
         String title = null, link = null, description = null, language = null, copyright = null, author = null, imageUrl = null, pubdate = null, lastBuildDate = null;
         Guid guid = null;
         Image image = null;
@@ -130,16 +130,20 @@ public class FeedReader implements Runnable {
 
             }
         } catch (XMLStreamException e) {
-            throw new RuntimeException(e);
+            System.out.println("RSS feed could not be parsed due to some illegal format");
+            return null;
         }
-        setlist(channel);
+        if (channel != null)
+            setlist(channel);
+        return channel;
     }
 
     private InputStream read(URL url) {
         try {
             return url.openStream();
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            System.out.println("URL not valid: " + url.toString());
+            return null;
         }
     }
 
@@ -203,19 +207,15 @@ public class FeedReader implements Runnable {
     }
 
     public synchronized ArrayList<Channel> getlist() {
-    	System.out.println("output size now is "+output.size());
-    	for(Channel channel: output) {
-    		System.out.println(channel.getTitle());
-    	}
         return output;
     }
 
 	@Override
 	public void run() {
 		// TODO Auto-generated method stub
-		Thread t=Thread.currentThread();
+        Channel channel = null;
         for (URL url : this.url)
-            fetchFeed(url);
+            channel = fetchFeed(url);
 	}
 
 
