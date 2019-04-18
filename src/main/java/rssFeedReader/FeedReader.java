@@ -1,4 +1,4 @@
-package hello;
+package rssFeedReader;
 
 import javax.xml.stream.XMLEventReader;
 import javax.xml.stream.XMLInputFactory;
@@ -46,6 +46,10 @@ public class FeedReader implements Runnable {
 
     public FeedReader() {
 
+    }
+
+    public synchronized void clearOutputList(){
+        this.output.clear();
     }
 
     public Channel fetchFeed(URL url) {
@@ -130,7 +134,7 @@ public class FeedReader implements Runnable {
 
             }
         } catch (XMLStreamException e) {
-            System.out.println("RSS feed could not be parsed due to some illegal format");
+//            System.out.println("RSS feed could not be parsed due to some illegal format");
             return null;
         }
         if (channel != null)

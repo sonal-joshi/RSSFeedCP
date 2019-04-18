@@ -1,4 +1,4 @@
-package hello;
+package rssFeedReader;
 
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -50,11 +50,16 @@ public class ForkJoinReader extends RecursiveAction{
 	}
 	
 	public synchronized void setList(Channel channel) {
-		output.add(channel);
+		if(channel!=null)
+    		output.add(channel);
 	}
 	
 	public ArrayList<Channel> getList() {
 		return output;
+	}
+
+	public synchronized void clearOutputList(){
+    	output.clear();
 	}
 	
 }

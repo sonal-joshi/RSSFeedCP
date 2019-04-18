@@ -1,4 +1,4 @@
-package hello;
+package rssFeedReader;
 
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,7 +20,7 @@ public class RssFeedServiceController {
 
     @MessageMapping("/fetchFeed")
     @SendTo("/rss/feeds")
-    public RssFeedReaderService greeting(FeedRequest feedRequest) throws Exception {
+    public RssFeedReaderService fetchFeed(FeedRequest feedRequest) throws Exception {
         switch (feedRequest.getMode()) {
             case "0":
                 return sequentialFeedReader(feedRequest);
@@ -41,17 +41,20 @@ public class RssFeedServiceController {
         long start = System.currentTimeMillis();
         System.out.println("timer start " + start);
         FeedReader feedReader = new FeedReader(feedRequest.getUrL());
+        feedReader.clearOutputList();
         feedReader.run();
         ArrayList<Channel> out = feedReader.getlist();
         long end = System.currentTimeMillis();
         System.out.println("timer end " + end);
         long diff = end - start;
         System.out.println("total time " + diff);
+        System.out.println("total channel " + out.size());
         return new RssFeedReaderService(out);
     }
 
     public RssFeedReaderService parallelFeedReaderwithThreads(FeedRequest feedRequest) throws Exception {
         FeedReader parser = new FeedReader();
+        parser.clearOutputList();
         ArrayList<Channel> output = new ArrayList<Channel>();
         long start = System.currentTimeMillis();
         System.out.println("timer start " + start);
@@ -76,11 +79,13 @@ public class RssFeedServiceController {
         System.out.println("timer end " + end);
         long diff = end - start;
         System.out.println("total time " + diff);
+        System.out.println("total channel " + output.size());
         return new RssFeedReaderService(output);
     }
 
     public RssFeedReaderService parallelFeedReaderwithThreadPool(FeedRequest feedRequest) {
         FeedReader parser = new FeedReader();
+        parser.clearOutputList();
         long start = System.currentTimeMillis();
         System.out.println("timer start " + start);
         ArrayList<Channel> output = new ArrayList<Channel>();
@@ -100,6 +105,7 @@ public class RssFeedServiceController {
         System.out.println("timer end " + end);
         long diff = end - start;
         System.out.println("total time " + diff);
+        System.out.println("total channel " + output.size());
         return new RssFeedReaderService(output);
 
     }
@@ -110,21 +116,24 @@ public class RssFeedServiceController {
         System.out.println("timer start " + start);
     	int nThreads=Runtime.getRuntime().availableProcessors();
     	 System.out.println("timer start "+ System.currentTimeMillis());
+        ForkJoinReader forkjoinreader=new ForkJoinReader();
+        forkjoinreader.clearOutputList();
     	 ForkJoinPool forkJoinPool = new ForkJoinPool(nThreads);
     	 System.out.println("number of threads"+nThreads);
         forkJoinPool.invoke(new ForkJoinReader(feedRequest.getUrL(), 0, feedRequest.getUrL().size()));
-    	 ForkJoinReader forkjoinreader=new ForkJoinReader();
     	 output=forkjoinreader.getList();
         long end = System.currentTimeMillis();
         System.out.println("timer end " + end);
         long diff = end - start;
         System.out.println("total time " + diff);
+        System.out.println("total channel " + output.size());
         return new RssFeedReaderService(output);
     }
 
 
     public RssFeedReaderService divideWorkAmongThreads(FeedRequest feedRequest) {
         int procs = Runtime.getRuntime().availableProcessors();
+        System.out.println(procs+" - "+feedRequest.getUrL());
         long startTime = System.currentTimeMillis();
         System.out.println("timer start " + startTime);
         ExecutorService es = Executors.newFixedThreadPool(procs);
@@ -138,17 +147,18 @@ public class RssFeedServiceController {
         int end = 0;
         int start = 0;
         int numberofTasks = 0;
-        FeedReader parser = new FeedReader();
+        FeedReader reader = new FeedReader();
+        reader.clearOutputList();
         for (int i = 1; i <= procs; i++) {
             if (i <= remainder)
                 numberofTasks = defaultBlockSize + 1;
             else
                 numberofTasks = defaultBlockSize;
-            start = end > 0 ? end + 1 : 0;
-            end = end + numberofTasks - 1;
-            System.out.println("New thread Range:" + start + " end : " + end);
+            start = end > 0 ? end : 0;
+            end = end + numberofTasks;
+            System.out.println("New thread Range:" + start + " end : " + end+ " number of tasks "+numberofTasks);
             ArrayList<String> urls = new ArrayList<>(feedRequest.getUrL().subList(start, end));
-            parser = new FeedReader(urls);
+            Runnable parser = new FeedReader(urls);
             futures.add(es.submit(parser));
         }
         for (Future<?> future : futures) {
@@ -160,11 +170,12 @@ public class RssFeedServiceController {
                 e.printStackTrace();
             }
         }
-        ArrayList<Channel> output = new ArrayList<Channel>(parser.getlist());
+        ArrayList<Channel> output = new ArrayList<Channel>(reader.getlist());
         long endtime = System.currentTimeMillis();
         System.out.println("timer end " + endtime);
         long diff = endtime - startTime;
         System.out.println("total time " + diff);
+        System.out.println("total channel " + output.size());
         return new RssFeedReaderService(output);
     }
 }

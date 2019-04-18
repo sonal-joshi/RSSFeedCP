@@ -1,4 +1,4 @@
-package hello;
+package rssFeedReader;
 
 public class Image {
     public String title;

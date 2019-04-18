@@ -1,4 +1,4 @@
-package hello;
+package rssFeedReader;
 
 import java.util.ArrayList;
 import java.util.List;

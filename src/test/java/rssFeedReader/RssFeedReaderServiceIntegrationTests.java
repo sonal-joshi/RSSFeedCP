@@ -1,4 +1,4 @@
-package hello;
+package rssFeedReader;
 
 import org.junit.Before;
 import org.junit.Ignore;
@@ -22,6 +22,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
 @RunWith(SpringRunner.class)
@@ -46,7 +47,6 @@ public class RssFeedReaderServiceIntegrationTests {
         this.stompClient = new WebSocketStompClient(sockJsClient);
         this.stompClient.setMessageConverter(new MappingJackson2MessageConverter());
     }
-
     @Ignore
     public void getGreeting() throws Exception {
 
@@ -57,17 +57,17 @@ public class RssFeedReaderServiceIntegrationTests {
 
             @Override
             public void afterConnected(final StompSession session, StompHeaders connectedHeaders) {
-                session.subscribe("/topic/greetings", new StompFrameHandler() {
+                session.subscribe("/rss/feeds", new StompFrameHandler() {
                     @Override
                     public Type getPayloadType(StompHeaders headers) {
-                        return RssFeedReaderService.class;
+                        return RssFeedServiceController.class;
                     }
 
                     @Override
                     public void handleFrame(StompHeaders headers, Object payload) {
-                        RssFeedReaderService rssFeedReaderService = (RssFeedReaderService) payload;
+                        RssFeedServiceController rssFeedReaderService = (RssFeedServiceController) payload;
                         try {
-                            //assertEquals("Hello, Spring!", rssFeedReaderService.getContent());
+                            assertEquals(new ArrayList<Channel>(), rssFeedReaderService.fetchFeed(new FeedRequest(new ArrayList<String>(), "0")));
                         } catch (Throwable t) {
                             failure.set(t);
                         } finally {
@@ -77,7 +77,7 @@ public class RssFeedReaderServiceIntegrationTests {
                     }
                 });
                 try {
-                    session.send("/app/hello", new FeedRequest(new ArrayList<String>(), "0"));
+                    session.send("/app/fetchFeed", new FeedRequest(new ArrayList<String>(), "0"));
                 } catch (Throwable t) {
                     failure.set(t);
                     latch.countDown();
@@ -87,7 +87,7 @@ public class RssFeedReaderServiceIntegrationTests {
 
         this.stompClient.connect("ws://localhost:{port}/gs-guide-websocket", this.headers, handler, this.port);
 
-        if (latch.await(3, TimeUnit.SECONDS)) {
+        if (latch.await(15, TimeUnit.SECONDS)) {
             if (failure.get() != null) {
                 throw new AssertionError("", failure.get());
             }

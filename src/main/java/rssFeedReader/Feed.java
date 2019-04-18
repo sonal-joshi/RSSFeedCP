@@ -1,4 +1,4 @@
-package hello;
+package rssFeedReader;
 
 // feed message structure
 public class Feed {
