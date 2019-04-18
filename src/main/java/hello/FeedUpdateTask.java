@@ -1,5 +1,8 @@
 package hello;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+
 public class FeedUpdateTask implements Runnable {
 
     String url;
@@ -12,8 +15,7 @@ public class FeedUpdateTask implements Runnable {
     @Override
     public void run() {
         // get urls and get feeds using multiple threads and display
-        parser = new FeedReader(url);
-        Channel channel = parser.fetchFeed();
-        System.out.println(" thread reading from feed update task");
+        parser = new FeedReader(new ArrayList<>(Arrays.asList(url)));
+        parser.run();
     }
 }

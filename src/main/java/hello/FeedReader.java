@@ -31,12 +31,14 @@ public class FeedReader implements Runnable {
     static final String GUID = "guid";
     static final String IMAGEURL = "url";
     private static ArrayList<Channel> output = new ArrayList<Channel>();
-    URL url;
+    ArrayList<URL> url;
 
-    public FeedReader(String url) {
+    public FeedReader(ArrayList<String> url) {
         // TODO Auto-generated constructor stub
         try {
-            this.url = new URL(url);
+            this.url = new ArrayList<URL>();
+            for (String cur : url)
+                this.url.add(new URL(cur));
         } catch (MalformedURLException e) {
             throw new RuntimeException(e);
         }
@@ -46,7 +48,7 @@ public class FeedReader implements Runnable {
 
     }
 
-    public Channel fetchFeed() {
+    public void fetchFeed(URL url) {
         String title = null, link = null, description = null, language = null, copyright = null, author = null, imageUrl = null, pubdate = null, lastBuildDate = null;
         Guid guid = null;
         Image image = null;
@@ -54,7 +56,7 @@ public class FeedReader implements Runnable {
         Channel channel = null;
         try {
             XMLInputFactory inputFactory = XMLInputFactory.newInstance();
-            InputStream in = read();
+            InputStream in = read(url);
             XMLEventReader eventReader = inputFactory.createXMLEventReader(in);
             while (eventReader.hasNext()) {
                 XMLEvent event = eventReader.nextEvent();
@@ -131,10 +133,9 @@ public class FeedReader implements Runnable {
             throw new RuntimeException(e);
         }
         setlist(channel);
-        return channel;
     }
 
-    private InputStream read() {
+    private InputStream read(URL url) {
         try {
             return url.openStream();
         } catch (IOException e) {
@@ -198,10 +199,7 @@ public class FeedReader implements Runnable {
     }
 
     public synchronized void setlist(Channel channel) {
-
         output.add(channel);
-        System.out.println("channel adding to main list "+channel.getTitle());
-        System.out.println("setting in list finished");
     }
 
     public synchronized ArrayList<Channel> getlist() {
@@ -216,9 +214,8 @@ public class FeedReader implements Runnable {
 	public void run() {
 		// TODO Auto-generated method stub
 		Thread t=Thread.currentThread();
-		System.out.println("in run method"+ t.getName());
-		Channel channel=fetchFeed();
-		System.out.println("channel title"+channel.getTitle());
+        for (URL url : this.url)
+            fetchFeed(url);
 	}
 
 
