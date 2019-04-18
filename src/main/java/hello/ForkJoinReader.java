@@ -33,7 +33,6 @@ public class ForkJoinReader extends RecursiveAction{
 				 } catch (MalformedURLException e) {
 					 e.printStackTrace();
 				 }
-				 System.out.println("in end task");
 			 }			
             
          } else {	    	

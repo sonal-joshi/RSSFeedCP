@@ -10,30 +10,31 @@
     <script src="/app.js"></script>
     <meta content="width=device-width, initial-scale=1.0" name="viewport">
 </head>
-<body>
+<body onload="connect();">
 <noscript><h2 style="color: #ff0000">Seems your browser doesn't support Javascript! Websocket relies on Javascript being
     enabled. Please enable
     Javascript and reload this page!</h2></noscript>
 <div id="main-content" class="container">
     <div class="row">
         <div class="col-md-6">
-            <form class="form-inline">
+            <form>
                 <div class="form-group">
-                    <label for="connect">WebSocket connection:</label>
-                    <button id="connect" class="btn btn-default" type="submit">Connect</button>
-                    <button id="disconnect" class="btn btn-default" type="submit" disabled="disabled">Disconnect
-                    </button>
+                    <label for="url">Want to add RSS Feed Url?</label>
+                    <input class="form-control" id="url" placeholder="Enter url here..." type="text">
+                    <button class="btn btn-default" id="addUrl">Add New Url</button>
                 </div>
+                <select class="form-control" id="runType">
+                    <option value="0">Sequential Run</option>
+                    <option value="1">Parallel Run - Exclusive Threads</option>
+                    <option value="2">Parallel Run - Thread Pool</option>
+                    <option value="3">Parallel Run - Fork and Join Framework</option>
+                    <option value="4">Parallel Run - Fixed task to thread Mapping</option>
+                </select>
+                <button class="btn btn-default" id="send" type="submit">Fetch Feeds</button>
             </form>
         </div>
         <div class="col-md-6">
-            <form class="form-inline">
-                <div class="form-group">
-                    <label for="url1">Want to add RSS Feed Url?</label>
-                    <input class="form-control" id="url1" placeholder="Enter url here..." type="text">
-                </div>
-                <button class="btn btn-default" id="send" type="submit">Add</button>
-            </form>
+            <div id="showExecutionTime"></div>
         </div>
     </div>
     <div class="row">
