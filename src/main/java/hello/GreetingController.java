@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ForkJoinPool;
 
 @Controller
 public class GreetingController {
@@ -24,7 +25,8 @@ public class GreetingController {
     public Greeting greeting(HelloMessage message) throws Exception {
         //return sequentialFeedReader(message);
     	//return parallelFeedReaderwithThreadPool(message);
-        return parallelFeedReaderwithThreads(message);
+    	return forkjoinprinciple(message);
+        //return parallelFeedReaderwithThreads(message);
     }
 
     public Greeting sequentialFeedReader(HelloMessage message) throws Exception {
@@ -80,6 +82,28 @@ public class GreetingController {
         output=parser.getlist();
         return new Greeting(output);
 
+    }
+    
+    public Greeting forkjoinprinciple(HelloMessage message) {
+    	ArrayList<Channel> output = new ArrayList<Channel>();
+    	ArrayList<String> input =new ArrayList<String>();
+    	input.add("http://rss.cnn.com/rss/cnn_topstories.rss");
+    	input.add("http://rss.nytimes.com/services/xml/rss/nyt/HomePage.xml");
+    	input.add("http://rss.nytimes.com/services/xml/rss/nyt/HomePage.xml");
+    	input.add("http://rss.cnn.com/rss/cnn_topstories.rss");
+    	input.add("https://www.codelitt.com/blog/rss");
+    	input.add("https://technology.condenast.com/feed/rss");
+    	input.add("http://rss.nytimes.com/services/xml/rss/nyt/HomePage.xml");
+    	input.add("http://rss.nytimes.com/services/xml/rss/nyt/HomePage.xml");
+    	input.add("http://rss.cnn.com/rss/cnn_health.rss");
+    	input.add("http://rss.nytimes.com/services/xml/rss/nyt/HomePage.xml");
+    	int nThreads=Runtime.getRuntime().availableProcessors();
+    	 ForkJoinPool forkJoinPool = new ForkJoinPool(nThreads);
+    	 System.out.println("number of threads"+nThreads);
+    	 forkJoinPool.invoke(new ForkJoinReader(input,0,input.size()));
+    	 ForkJoinReader forkjoinreader=new ForkJoinReader();
+    	 output=forkjoinreader.getList();
+    	return new Greeting(output);
     }
 
     public void fireGreeting() {
